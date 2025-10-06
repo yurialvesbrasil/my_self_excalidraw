@@ -1,0 +1,44 @@
+services:
+  frontend:
+    image: yurialvesbrasil/excalidraw-frontend:latest
+    container_name: excalidraw_frontend
+    ports:
+      - "8080:80"
+    environment:
+      # URLs apontando para seu backend de storage e para o room server
+      - VITE_APP_BACKEND_V2_GET_URL=http://storage:8081/api/v2/scenes/
+      - VITE_APP_BACKEND_V2_POST_URL=http://storage:8081/api/v2/scenes/
+      - VITE_APP_HTTP_STORAGE_BACKEND_URL=http://storage:8081/api/v2
+      - VITE_APP_STORAGE_BACKEND=http
+      - VITE_APP_WS_SERVER_URL=ws://room:80
+      # outras variáveis conforme necessário
+
+  storage:
+    image: yurialvesbrasil/excalidraw-storage-backend:latest
+    container_name: excalidraw_storage
+    ports:
+      - "8081:8080"
+    environment:
+      - PORT=8080
+      - GLOBAL_PREFIX=/api/v2
+      # STORAGE_URI define onde o backend vai persistir dados (redis, mongo etc)
+      - STORAGE_URI=redis://redis:6379
+      # Se quiser usar outro DB, ajustar conforme docs :contentReference[oaicite:5]{index=5}
+
+  room:
+    image: excalidraw/excalidraw-room:latest
+    container_name: excalidraw_room
+    ports:
+      - "8082:80"
+    # possivelmente sem variáveis extras se rodar padrão
+
+  redis:
+    image: redis:latest
+    container_name: excalidraw_redis
+    ports:
+      - "6379:6379"
+    # opcional: montar volume para persistência
+
+networks:
+  default:
+    driver: bridge
